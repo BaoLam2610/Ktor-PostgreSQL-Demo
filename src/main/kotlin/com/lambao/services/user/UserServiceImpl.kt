@@ -1,9 +1,10 @@
 package com.lambao.services.user
 
+import com.lambao.database.table.UserTable
 import com.lambao.extensions.query
 import com.lambao.models.domain.User
-import com.lambao.database.table.UserTable
 import com.lambao.models.params.RegisterParams
+import com.lambao.security.hash
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
@@ -11,11 +12,11 @@ import org.jetbrains.exposed.sql.statements.InsertStatement
 
 class UserServiceImpl : UserService {
     override suspend fun register(params: RegisterParams): User? {
-        var statement : InsertStatement<Number>? = null
+        var statement: InsertStatement<Number>? = null
         query {
             statement = UserTable.insert {
                 it[email] = params.email ?: ""
-                it[password] = params.password ?: ""
+                it[password] = params.password?.let { password -> hash(password) } ?: ""
                 it[fullName] = params.fullName ?: ""
                 it[avatar] = params.avatar ?: ""
             }
@@ -32,7 +33,7 @@ class UserServiceImpl : UserService {
     }
 
     private fun rowToUser(row: ResultRow?): User? {
-        return if(row == null) null
+        return if (row == null) null
         else User(
             id = row[UserTable.id],
             fullName = row[UserTable.fullName],

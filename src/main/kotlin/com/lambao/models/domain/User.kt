@@ -5,6 +5,6 @@ data class User(
     val fullName: String,
     val avatar: String,
     val email: String,
-    val token: String? = null,
+    var token: String? = null,
     val createAt: String,
 )
